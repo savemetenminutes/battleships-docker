@@ -1,0 +1,4 @@
+volumes/file/root/*
+!volumes/file/root/.gitkeep
+volumes-shared/directory/.ssh/git/php73-fpm/*
+!volumes-shared/directory/.ssh/git/php73-fpm/.gitkeep

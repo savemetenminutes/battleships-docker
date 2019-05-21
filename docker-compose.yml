@@ -1,0 +1,94 @@
+version: "3.7"
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 213.213.0.0/16
+
+services:
+
+  apache24:
+    #privileged: true
+    build:
+      context: ./apache24/
+      args:
+        LINUX_ROOT_PASSWORD: 123123
+    container_name: savemetenminutes-battleships-apache24
+    # Uncomment the command: line below to enable Apache's info and status modules for development/debugging purposes
+    # Make sure to also uncomment the `#RewriteCond %{REQUEST_URI} !^(/server-info)|(/server-status)|(/phpinfo.php)$` line in the .htaccess file in the PHP framework ./public directories for this to work (with SSL)
+    #command: /bin/bash -c 'a2enmod info status && cmd_master.sh'
+    volumes:
+      - ./volumes-common/directory/var/www/content:/var/www/content
+      - ./volumes-common/file/etc/rsyslog.conf:/etc/rsyslog.conf
+      - ./volumes-common/file/etc/ssl/certs/apache-selfsigned.crt:/etc/ssl/certs/apache-selfsigned.crt
+      - ./volumes-common/file/etc/ssl/private/apache-selfsigned.key:/etc/ssl/private/apache-selfsigned.key
+      - ./apache24/volumes/file/etc/supervisor/conf.d/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+      - ./apache24/volumes/file/root/.bash_history:/root/.bash_history
+      - ./apache24/volumes/file/usr/local/bin/cmd_master.sh:/usr/local/bin/cmd_master.sh
+      - ./apache24/volumes/file/usr/local/bin/service_reinitialize.sh:/usr/local/bin/service_reinitialize.sh
+      - ./apache24/volumes/file/usr/local/bin/service_start.sh:/usr/local/bin/service_start.sh
+      - ./apache24/volumes/file/usr/local/apache2/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/compression.conf:/usr/local/apache2/conf/extra/compression.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/cors.conf:/usr/local/apache2/conf/extra/cors.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/errors.conf:/usr/local/apache2/conf/extra/errors.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/ie.conf:/usr/local/apache2/conf/extra/ie.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/mod_authz_core.conf:/usr/local/apache2/conf/extra/mod_authz_core.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/mod_autoindex.conf:/usr/local/apache2/conf/extra/mod_autoindex.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/mod_expires.conf:/usr/local/apache2/conf/extra/mod_expires.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/mod_headers.conf:/usr/local/apache2/conf/extra/mod_headers.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/mod_include.conf:/usr/local/apache2/conf/extra/mod_include.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/mod_info.conf:/usr/local/apache2/conf/extra/mod_info.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/mod_mime.conf:/usr/local/apache2/conf/extra/mod_mime.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/mod_rewrite.conf:/usr/local/apache2/conf/extra/mod_rewrite.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/mod_ssl.conf:/usr/local/apache2/conf/extra/mod_ssl.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/mod_status.conf:/usr/local/apache2/conf/extra/mod_status.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/php.conf:/usr/local/apache2/conf/extra/php.conf
+      - ./apache24/volumes/file/usr/local/apache2/conf/extra/virtualhosts/000-default.conf:/usr/local/apache2/conf/extra/virtualhosts/000-default.conf
+      - ./battleships/volumes-common/directory/var/www/content/battleships:/var/www/content/battleships
+      - ./battleships/apache24/volumes/file/usr/local/apache2/conf/extra/virtualhosts/003-battleships.conf:/usr/local/apache2/conf/extra/virtualhosts/003-battleships.conf
+    networks:
+      default:
+        ipv4_address: 213.213.213.141
+        aliases:
+          - apache24.savemetenminutes-battleships
+    ports:
+      - "45080:80"
+      - "45083:83"
+      - "45443:443"
+      - "45483:483"
+      - "45022:22"
+
+  php73-fpm:
+    #privileged: true
+    build:
+      context: ./php73-fpm/
+      args:
+        LINUX_ROOT_PASSWORD: 123123
+    container_name: savemetenminutes-battleships-php73-fpm
+    volumes:
+      - ./volumes-common/directory/var/www/content:/var/www/content
+      - ./volumes-common/file/etc/rsyslog.conf:/etc/rsyslog.conf
+      - ./volumes-common/file/usr/local/bin/install_latest_composer.sh:/usr/local/bin/install_latest_composer.sh
+      - ./volumes-common/file/usr/local/bin/wait_for_mysql.sh:/usr/local/bin/wait_for_mysql.sh
+      - ./php73-fpm/volumes-shared/directory/.ssh/git/php73-fpm/:/root/.ssh/git/
+      - ./php73-fpm/volumes/file/etc/supervisor/conf.d/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+      - ./php73-fpm/volumes/file/root/.bash_history:/root/.bash_history
+      - ./php73-fpm/volumes/file/usr/local/bin/cmd_master.sh:/usr/local/bin/cmd_master.sh
+      - ./php73-fpm/volumes/file/usr/local/bin/service_reinitialize.sh:/usr/local/bin/service_reinitialize.sh
+      - ./php73-fpm/volumes/file/usr/local/bin/service_start.sh:/usr/local/bin/service_start.sh
+      - ./php73-fpm/volumes/file/usr/local/etc/php/php.ini:/usr/local/etc/php/php.ini
+      - ./php73-fpm/volumes/file/usr/local/etc/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./php73-fpm/volumes/file/usr/local/etc/php-fpm.conf:/usr/local/etc/php-fpm.conf
+      - ./php73-fpm/volumes/file/usr/local/etc/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./php73-fpm/volumes/file/usr/local/etc/php-fpm.d/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
+      - ./battleships/volumes-common/directory/var/www/content/battleships:/var/www/content/battleships
+      - ./battleships/php73-fpm/volumes/file/usr/local/bin/service_reinitializers/battleships.sh:/usr/local/bin/service_reinitializers/battleships.sh
+    networks:
+      default:
+        ipv4_address: 213.213.213.142
+        aliases:
+          - php73-fpm.savemetenminutes-battleships
+    ports:
+      - "46090:9090"
+      - "42022:22"

@@ -1,0 +1,2 @@
+volumes/file/root/*
+!volumes/file/root/.gitkeep

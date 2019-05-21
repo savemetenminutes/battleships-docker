@@ -1,0 +1,4 @@
+[submodule "battleships"]
+	path = battleships
+	url = https://github.com/savemetenminutes/battleships-config.git
+	branch = master

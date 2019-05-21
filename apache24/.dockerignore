@@ -1,0 +1,6 @@
+# When building a docker image, the docker binary makes a tarball of the build context (by default the directory where
+# the Dockerfile resides, also specified by the build/context directive in a docker-compose file) and then sends it to
+# the docker daemon. Thus when the build context contains a large amount of files the actual build preparation routine
+# can take awhile. Since we are not doing (m)any  build-time copy operations we can ignore everything within the build
+# context of most of the services.
+*
